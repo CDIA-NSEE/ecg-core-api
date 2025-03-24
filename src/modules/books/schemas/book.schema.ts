@@ -1,12 +1,12 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { ApiProperty } from '@nestjs/swagger';
 import { Document } from 'mongoose';
-import { BaseSchema } from '../../../shared/common/schemas';
+import { BaseSchema, BaseDocument } from '../../../shared/common/schemas';
 
-export type BookDocument = Book & Document;
+export type BookDocument = Book & BaseDocument;
 
 @Schema({ timestamps: true })
-export class Book implements BaseSchema {
+export class Book extends BaseSchema {
   @ApiProperty({ description: 'The unique identifier of the book' })
   _id: string;
 

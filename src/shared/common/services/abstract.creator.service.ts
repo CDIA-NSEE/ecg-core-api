@@ -1,12 +1,12 @@
 import { Document } from 'mongoose';
-import { BaseSchema } from '../schemas';
+import { BaseDocument, BaseSchema } from '../schemas';
 import { AbstractRepository } from '../repositories';
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { LoggerService } from './logger.service';
 
 @Injectable()
 export abstract class AbstractCreatorService<
-  T extends Document & BaseSchema,
+  T extends BaseDocument,
   CreateDto extends Record<string, any>,
 > {
   constructor(
