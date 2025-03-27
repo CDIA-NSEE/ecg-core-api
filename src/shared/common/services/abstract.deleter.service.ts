@@ -1,10 +1,12 @@
-import { Document } from 'mongoose';
 import { AbstractRepository } from '../repositories/abstract.repository';
 import { LoggerService } from './logger.service';
-import { Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
+import {
+  InternalServerErrorException,
+  NotFoundException,
+} from '@nestjs/common';
+import { BaseDocument } from '../schemas';
 
-@Injectable()
-export abstract class AbstractDeleterService<T extends Document> {
+export abstract class AbstractDeleterService<T extends BaseDocument> {
   constructor(
     protected readonly repository: AbstractRepository<T>,
     protected readonly logger: LoggerService,
@@ -25,7 +27,9 @@ export abstract class AbstractDeleterService<T extends Document> {
       if (error instanceof NotFoundException) {
         throw error;
       }
-      throw new InternalServerErrorException(`Error deleting ${this.entityName}`);
+      throw new InternalServerErrorException(
+        `Error deleting ${this.entityName}`,
+      );
     }
   }
 

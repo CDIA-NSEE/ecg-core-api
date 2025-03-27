@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { UserRepository } from '../../repositories/user.repository';
-import { User } from '../../schemas/user.schema';
+import { UserRepository } from '../repositories/user.repository';
+import { User } from '../schemas/user.schema';
 import { NotFoundException } from '@nestjs/common';
 
 @Injectable()

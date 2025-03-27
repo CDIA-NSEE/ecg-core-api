@@ -1,10 +1,15 @@
 import { Injectable } from '@nestjs/common';
+import { FilterQuery } from 'mongoose';
+import { UserDocument } from '../schemas/user.schema';
+import { CreateUserDto } from '../dto/create-user.dto';
+import { UpdateUserDto } from '../dto/update-user.dto';
 import { UserCreatorService } from './user-creator.service';
 import { UserFinderService } from './user-finder.service';
 import { UserUpdaterService } from './user-updater.service';
 import { UserDeleterService } from './user-deleter.service';
 import { UserIndexerService } from './user-indexer.service';
-import { User } from '../../schemas/user.schema';
+import { PaginationDto } from '../../../shared/common/dto/pagination.dto';
+import { UserResponseEntity, UsersPageResponseEntity } from '../entities';
 
 @Injectable()
 export class UserFacadeService {
@@ -16,23 +21,51 @@ export class UserFacadeService {
     private readonly indexer: UserIndexerService,
   ) {}
 
-  async create(user: User): Promise<User> {
-    return this.creator.create(user);
+  async create(createUserDto: CreateUserDto): Promise<UserResponseEntity> {
+    const user = await this.creator.create(createUserDto);
+    return UserResponseEntity.fromEntity(user);
   }
 
-  async findOne(username: string): Promise<User | null> {
-    return this.finder.findOne(username);
+  async findAll(
+    filter?: FilterQuery<UserDocument>,
+  ): Promise<UserResponseEntity[]> {
+    const users = await this.indexer.findAll(filter);
+    return UserResponseEntity.fromEntities(users);
   }
 
-  async findAll(): Promise<User[]> {
-    return this.indexer.findAll();
+  async findWithPagination(
+    pagination: PaginationDto,
+    filter?: FilterQuery<UserDocument>,
+  ): Promise<UsersPageResponseEntity> {
+    const { data, meta } = await this.indexer.findWithPagination(
+      pagination,
+      filter,
+    );
+
+    const userEntities = UserResponseEntity.fromEntities(data);
+    return new UsersPageResponseEntity(userEntities, meta);
   }
 
-  async update(id: string, user: Partial<User>): Promise<User> {
-    return this.updater.update(id, user);
+  async findOne(id: string): Promise<UserResponseEntity> {
+    const user = await this.finder.findOne(id);
+    return UserResponseEntity.fromEntity(user);
   }
 
-  async delete(id: string): Promise<void> {
-    await this.deleter.delete(id);
+  async update(
+    id: string,
+    updateUserDto: UpdateUserDto,
+  ): Promise<UserResponseEntity> {
+    const user = await this.updater.update(id, updateUserDto);
+    return UserResponseEntity.fromEntity(user);
+  }
+
+  async delete(id: string): Promise<UserResponseEntity> {
+    const user = await this.deleter.delete(id);
+    return UserResponseEntity.fromEntity(user);
+  }
+
+  async hardDelete(id: string): Promise<UserResponseEntity> {
+    const user = await this.deleter.hardDelete(id);
+    return UserResponseEntity.fromEntity(user);
   }
 }

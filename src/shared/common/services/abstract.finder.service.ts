@@ -1,10 +1,12 @@
-import { Document, FilterQuery } from 'mongoose';
 import { AbstractRepository } from '../repositories/abstract.repository';
 import { LoggerService } from './logger.service';
-import { Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
+import {
+  InternalServerErrorException,
+  NotFoundException,
+} from '@nestjs/common';
+import { BaseDocument } from '../schemas';
 
-@Injectable()
-export abstract class AbstractFinderService<T extends Document> {
+export abstract class AbstractFinderService<T extends BaseDocument> {
   constructor(
     protected readonly repository: AbstractRepository<T>,
     protected readonly logger: LoggerService,
@@ -14,7 +16,7 @@ export abstract class AbstractFinderService<T extends Document> {
   async findOne(id: string): Promise<T> {
     try {
       this.logger.logOperation('findOne', this.entityName, { id });
-      const result = await this.repository.findById(id);
+      const result = await this.repository.findOne(id);
       if (!result) {
         throw new NotFoundException(`${this.entityName} not found`);
       }
@@ -24,7 +26,9 @@ export abstract class AbstractFinderService<T extends Document> {
       if (error instanceof NotFoundException) {
         throw error;
       }
-      throw new InternalServerErrorException(`Error finding ${this.entityName}`);
+      throw new InternalServerErrorException(
+        `Error finding ${this.entityName}`,
+      );
     }
   }
 }

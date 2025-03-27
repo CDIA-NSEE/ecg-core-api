@@ -30,7 +30,6 @@
     "@nestjs/platform-express": "^10.0.0",
     "@nestjs/swagger": "^7.3.0",
     "@nestjs/cache-manager": "^2.2.0",
-    "@nestjs/redis": "^10.2.0",
     "@nestjs/throttler": "^5.1.1",
     "cache-manager": "^5.4.0",
     "cache-manager-redis-store": "^3.0.1",

@@ -1,23 +1,15 @@
-import { Injectable, Logger } from '@nestjs/common';
-import { UserRepository } from '../../repositories/user.repository';
-import { User } from '../../schemas/user.schema';
-import { NotFoundException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
+import { AbstractIndexerService } from '../../../shared/common/services';
+import { LoggerService } from '../../../shared/common/services/logger.service';
+import { UserDocument } from '../schemas/user.schema';
+import { UserRepository } from '../repositories/user.repository';
 
 @Injectable()
-export class UserIndexerService {
-  private readonly logger = new Logger(UserIndexerService.name);
-
-  constructor(private readonly userRepository: UserRepository) {}
-
-  async findAll(): Promise<User[]> {
-    try {
-      this.logger.log('Fetching all users');
-      const users = await this.userRepository.find();
-      this.logger.log(`Found ${users.length} users`);
-      return users;
-    } catch (error) {
-      this.logger.error('Error fetching users', error.stack);
-      throw new NotFoundException('Failed to fetch users');
-    }
+export class UserIndexerService extends AbstractIndexerService<UserDocument> {
+  constructor(
+    private readonly userRepository: UserRepository,
+    logger: LoggerService,
+  ) {
+    super(userRepository, logger, 'User');
   }
 }

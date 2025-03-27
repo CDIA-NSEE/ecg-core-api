@@ -1,11 +1,11 @@
-import { Document, FilterQuery } from 'mongoose';
 import { AbstractRepository } from '../repositories/abstract.repository';
 import { LoggerService } from './logger.service';
-import { Injectable, InternalServerErrorException } from '@nestjs/common';
-import { PaginatedResult, PaginationDto } from '../dto/pagination.dto';
+import { InternalServerErrorException } from '@nestjs/common';
+import { BaseDocument } from '../schemas';
+import { PaginatedResponseDto, PaginationDto } from '../dto/pagination.dto';
+import { FilterQuery } from 'mongoose';
 
-@Injectable()
-export abstract class AbstractIndexerService<T extends Document> {
+export abstract class AbstractIndexerService<T extends BaseDocument> {
   constructor(
     protected readonly repository: AbstractRepository<T>,
     protected readonly logger: LoggerService,
@@ -19,20 +19,25 @@ export abstract class AbstractIndexerService<T extends Document> {
       return results;
     } catch (error) {
       this.logger.logError('findAll', this.entityName, error);
-      throw new InternalServerErrorException(`Error listing ${this.entityName}s`);
+      throw new InternalServerErrorException(
+        `Error listing ${this.entityName}s`,
+      );
     }
   }
 
   async findWithPagination(
     pagination: PaginationDto,
     filter?: FilterQuery<T>,
-  ): Promise<PaginatedResult<T>> {
+  ): Promise<PaginatedResponseDto<T>> {
     try {
       this.logger.logOperation('findWithPagination', this.entityName, {
         pagination,
         filter,
       });
-      const results = await this.repository.findWithPagination(pagination, filter);
+      const results = await this.repository.findWithPagination(
+        pagination,
+        filter,
+      );
       return results;
     } catch (error) {
       this.logger.logError('findWithPagination', this.entityName, error);

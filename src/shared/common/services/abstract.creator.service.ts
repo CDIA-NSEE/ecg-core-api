@@ -1,10 +1,8 @@
-import { Document } from 'mongoose';
-import { BaseDocument, BaseSchema } from '../schemas';
+import { BaseDocument } from '../schemas';
 import { AbstractRepository } from '../repositories';
-import { Injectable, InternalServerErrorException } from '@nestjs/common';
+import { InternalServerErrorException } from '@nestjs/common';
 import { LoggerService } from './logger.service';
 
-@Injectable()
 export abstract class AbstractCreatorService<
   T extends BaseDocument,
   CreateDto extends Record<string, any>,
@@ -22,7 +20,9 @@ export abstract class AbstractCreatorService<
       return result;
     } catch (error) {
       this.logger.logError('create', this.entityName, error);
-      throw new InternalServerErrorException(`Error creating ${this.entityName}`);
+      throw new InternalServerErrorException(
+        `Error creating ${this.entityName}`,
+      );
     }
   }
 }
