@@ -10,6 +10,7 @@ import { ExamDeleterService } from './exam-deleter.service';
 import { ExamIndexerService } from './exam-indexer.service';
 import { PaginationDto } from '../../../shared/common/dto/pagination.dto';
 import { ExamResponseEntity, ExamsPageResponseEntity } from '../entities';
+import { CreateExamWithFileDto } from '../dto/create-exam-with-file.dto';
 
 @Injectable()
 export class ExamFacadeService {
@@ -26,7 +27,7 @@ export class ExamFacadeService {
     return ExamResponseEntity.fromEntity(exam);
   }
 
-  async createWithFile(formData: any): Promise<ExamResponseEntity> {
+  async createWithFile(formData: CreateExamWithFileDto): Promise<ExamResponseEntity> {
     const exam = await this.creator.createWithFile(formData);
     return ExamResponseEntity.fromEntity(exam);
   }
