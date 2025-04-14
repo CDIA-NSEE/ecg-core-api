@@ -13,7 +13,7 @@ export abstract class AbstractFinderService<T extends BaseDocument> {
     protected readonly entityName: string,
   ) {}
 
-  async findOne(id: string): Promise<T> {
+  async findOne(id: number): Promise<T> {
     try {
       this.logger.logOperation('findOne', this.entityName, { id });
       const result = await this.repository.findOne(id);

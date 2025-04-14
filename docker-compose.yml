@@ -1,28 +1,6 @@
 version: '3.8'
 
 services:
-  api:
-    build:
-      context: .
-      target: builder
-    ports:
-      - "3000:3000"
-    environment:
-      - NODE_ENV=development
-      - MONGODB_URI=mongodb://mongodb:27017/books
-      - REDIS_URL=redis://redis:6379
-      - REDIS_TTL=3600
-      - CORS_ORIGIN=*
-      - THROTTLE_TTL=60
-      - THROTTLE_LIMIT=100
-    volumes:
-      - .:/app
-      - /app/node_modules
-    command: npm run start:dev
-    depends_on:
-      - mongodb
-      - redis
-
   mongodb:
     image: mongo:latest
     ports:

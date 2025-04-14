@@ -9,6 +9,7 @@ import { UserFinderService } from './services/user-finder.service';
 import { UserUpdaterService } from './services/user-updater.service';
 import { UserDeleterService } from './services/user-deleter.service';
 import { UserIndexerService } from './services/user-indexer.service';
+import { LoggerService } from '../../shared/common/services/logger.service';
 
 @Module({
   imports: [
@@ -37,8 +38,9 @@ import { UserIndexerService } from './services/user-indexer.service';
       provide: 'UserIndexerService',
       useClass: UserIndexerService,
     },
+    LoggerService,
   ],
   controllers: [UsersController],
-  exports: [UserFacadeService, UserRepository],
+  exports: [UserFacadeService, UserRepository, LoggerService],
 })
 export class UsersModule {}
