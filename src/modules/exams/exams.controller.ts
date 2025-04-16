@@ -41,6 +41,7 @@ import { ExamResponseEntity } from "./entities/exam-response.entity";
 import { FileInterceptor } from "@nestjs/platform-express";
 import { Request } from 'express';
 import { MulterFile } from "./interfaces/multer-file.interface";
+import { BadRequestException } from '@nestjs/common';
 
 @ApiTags('Exams')
 @Controller("exams")
@@ -76,28 +77,32 @@ export class ExamsController {
   }
 
   @Post('upload')
-  @ApiOperation({ summary: 'Create a new exam with file upload' })
   @ApiConsumes('multipart/form-data')
-  @ApiCreatedResponse({
-    description: 'The exam has been successfully created with file',
-    type: ExamResponseEntity
+  @ApiOperation({ summary: 'Upload a file and create an exam' })
+  @ApiResponse({
+    status: HttpStatus.CREATED,
+    description: 'Exam created successfully with file',
+    type: ExamResponseEntity,
   })
-  @ApiBadRequestResponse({ 
-    description: 'Invalid input data or file' 
-  })
-  @ApiInternalServerErrorResponse({ 
-    description: 'Internal server error' 
-  })
-  @ApiBody({
-    type: CreateExamWithFileDto
-  })
-  @UseInterceptors(FileInterceptor('file'))
-  async uploadExam(
+  @UseInterceptors(
+    FileInterceptor('file', {
+      limits: {
+        fileSize: 10 * 1024 * 1024, // 10MB
+      },
+      fileFilter: (req, file, cb) => {
+        if (!file.originalname.match(/\.(jpg|jpeg|png|pdf|dicom)$/i)) {
+          return cb(new BadRequestException('Only image, PDF, and DICOM files are allowed'), false);
+        }
+        cb(null, true);
+      },
+    })
+  ) 
+  async uploadFile(
     @UploadedFile(
       new ParseFilePipe({
         validators: [
-          new MaxFileSizeValidator({ maxSize: 10 * 1024 * 1024 }), // 10MB max size
-          new FileTypeValidator({ fileType: /(jpg|jpeg|png|pdf|dicom)$/ }),
+          new MaxFileSizeValidator({ maxSize: 10 * 1024 * 1024 }), // 10MB
+          new FileTypeValidator({ fileType: '.(jpg|jpeg|png|pdf|dicom)' }),
         ],
       }),
     ) 
@@ -110,12 +115,12 @@ export class ExamsController {
         file,
         examDate: body.examDate,
         dateOfBirth: body.dateOfBirth,
-        amplitude: body.amplitude,
-        velocity: body.velocity,
+        heartRate: body.heartRate,
+        waveDurations: body.waveDurations,
+        waveAxes: body.waveAxes,
         report: body.report,
-        categories: typeof body.categories === 'string' ? 
-          JSON.parse(body.categories) : body.categories,
-        status: body.status,
+        categoriesString: body.categoriesString,
+        version: body.version,
       };
       
       return await this.facade.createWithFile(formData);

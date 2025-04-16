@@ -20,7 +20,7 @@ export class RepositoryException extends Error {
 export class RepositoryConflictException extends Error {
   constructor(
     message: string,
-    public error?: any,
+public  error?: any,
   ) {
     super(message);
     this.name = 'RepositoryConflictException';
@@ -135,6 +135,7 @@ export abstract class AbstractRepository<T extends BaseDocument> {
         meta: {
           total,
           page,
+          limit,
           lastPage,
           hasNextPage: page < lastPage,
           hasPreviousPage: page > 1,

@@ -8,6 +8,6 @@ export class ExamsPageResponseEntity extends PageResponseEntity<ExamResponseEnti
   items: ExamResponseEntity[];
 
   constructor(items: ExamResponseEntity[], meta: PaginationMetaDto) {
-    super(items, meta);
+    super(items, meta.total, meta.page, meta.limit);
   }
 }

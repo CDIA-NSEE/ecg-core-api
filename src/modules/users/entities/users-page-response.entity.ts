@@ -8,6 +8,6 @@ export class UsersPageResponseEntity extends PageResponseEntity<UserResponseEnti
   items: UserResponseEntity[];
 
   constructor(items: UserResponseEntity[], meta: PaginationMetaDto) {
-    super(items, meta);
+    super(items, meta.total, meta.page, meta.limit);
   }
 }

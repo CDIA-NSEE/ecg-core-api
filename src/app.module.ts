@@ -2,12 +2,13 @@ import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { MongooseModule } from '@nestjs/mongoose';
-import { BooksModule } from './modules';
 import { ConfigModule, ConfigService, GridFsModule } from './shared';
 import { RedisCacheModule } from './shared/cache';
 import { APP_GUARD } from '@nestjs/core';
 import { ThrottlerGuard } from '@nestjs/throttler';
 import { AppThrottlerModule } from './shared/throttler/throttler.module';
+import { UsersModule } from './modules';
+import { ExamsModule } from './modules/exams';
 
 @Module({
   imports: [
@@ -21,7 +22,8 @@ import { AppThrottlerModule } from './shared/throttler/throttler.module';
     }),
     RedisCacheModule,
     AppThrottlerModule,
-    BooksModule,
+    UsersModule,
+    ExamsModule,
     GridFsModule,
   ],
   controllers: [AppController],

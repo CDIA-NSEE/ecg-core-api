@@ -14,7 +14,7 @@ export class UserFinderService {
       this.logger.log(`Searching for user with username: ${username}`);
       const user = await this.userRepository.findOne(username);
       if (user) {
-        this.logger.log(`Found user: ${user.username}`);
+        this.logger.log(`Found user: ${user.name}`);
       } else {
         this.logger.log(`No user found with username: ${username}`);
       }

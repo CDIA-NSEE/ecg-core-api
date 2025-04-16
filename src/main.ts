@@ -3,7 +3,7 @@ import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { ValidationPipe } from '@nestjs/common';
 import { AppModule } from './app.module';
 import { ConfigService } from './shared';
-import * as helmet from 'helmet';
+import helmet from 'helmet';
 import * as compression from 'compression';
 
 async function bootstrap() {

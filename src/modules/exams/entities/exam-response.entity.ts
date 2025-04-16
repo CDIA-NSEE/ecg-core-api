@@ -2,6 +2,9 @@ import { ApiProperty } from '@nestjs/swagger';
 import { BaseEntity } from '../../../shared/common/entities/base.entity';
 import { ExamDocument } from '../schemas/exam.schema';
 import { Types } from 'mongoose';
+import { EcgFinding } from '../enums';
+import { FileMetadataDto } from '../../../shared/database/gridfs/dto';
+import { EcgParameters } from '../schemas/ecg-parameters.schema';
 
 export class ExamResponseEntity extends BaseEntity {
   @ApiProperty({ description: 'The unique identifier of the exam' })
@@ -13,23 +16,20 @@ export class ExamResponseEntity extends BaseEntity {
   @ApiProperty({ description: 'The date of birth of the patient' })
   dateOfBirth?: Date;
 
-  @ApiProperty({ description: 'The URL of the exam image from GridFS' })
-  imageUrl?: string;
+  @ApiProperty({ description: 'File metadata for the exam' })
+  fileMetadata?: FileMetadataDto;
 
-  @ApiProperty({ description: 'The amplitude of the ECG signal' })
-  amplitude?: number;
-
-  @ApiProperty({ description: 'The velocity of the ECG signal' })
-  velocity?: number;
+  @ApiProperty({ description: 'ECG-specific parameters' })
+  ecgParameters?: EcgParameters;
 
   @ApiProperty({ description: 'The medical report of the exam' })
   report?: string;
 
-  @ApiProperty({ description: 'Categories or tags for the exam', type: [String] })
-  categories?: string[];
+  @ApiProperty({ description: 'Categories or tags for the exam', type: [String], enum: EcgFinding })
+  categories?: EcgFinding[];
 
-  @ApiProperty({ description: 'The status of the exam' })
-  status: string;
+  @ApiProperty({ description: 'Version of the exam data' })
+  version: number;
 
   @ApiProperty({ description: 'Whether the exam is deleted (soft delete)' })
   deletedAt?: Date;
@@ -52,12 +52,11 @@ export class ExamResponseEntity extends BaseEntity {
       id: exam._id.toString(),
       examDate: exam.examDate,
       dateOfBirth: exam.dateOfBirth,
-      imageUrl: exam.imageUrl,
-      amplitude: exam.amplitude,
-      velocity: exam.velocity,
+      fileMetadata: exam.fileMetadata,
+      ecgParameters: exam.ecgParameters,
       report: exam.report,
       categories: exam.categories,
-      status: exam.status,
+      version: exam.version,
       deletedAt: exam.deletedAt,
       createdAt: exam.createdAt,
       updatedAt: exam.updatedAt,
