@@ -7,6 +7,12 @@ import { CreateExamWithFileDto } from '../dto/create-exam-with-file.dto';
 import { ExamRepository } from '../repositories';
 import { ExamDocument } from '../schemas/exam.schema';
 import { GridFsService } from '../../../shared/database/gridfs/gridfs.service';
+import { EcgFinding } from '../enums';
+import * as mongoose from 'mongoose';
+import { FileMetadataDto } from '../../../shared/database/gridfs/dto';
+import { WaveDuration } from '../schemas/wave-duration.schema';
+import { WaveAxis } from '../schemas/wave-axis.schema';
+import { EcgParameters } from '../schemas/ecg-parameters.schema';
 
 @Injectable()
 export class ExamCreatorService extends AbstractCreatorService<
@@ -30,34 +36,68 @@ export class ExamCreatorService extends AbstractCreatorService<
         throw new BadRequestException('Exam file is required');
       }
 
-      const examData: CreateExamDto = {
-        examDate: formData.examDate || new Date(),
-        dateOfBirth: formData.dateOfBirth,
-        amplitude: formData.amplitude,
-        velocity: formData.velocity,
-        report: formData.report,
-        categories: formData.categories,
-        status: formData.status || 'pending',
-      };
-
       if (!file.buffer) {
         throw new BadRequestException('File buffer is required');
       }
 
-      const metadata = {
-        contentType: file.mimetype,
-        examId: null,
+      const md5Hash = crypto.createHash('md5').update(file.buffer).digest('hex');
+      
+      let waveDurations: WaveDuration[] = [];
+      if (formData.waveDurations) {
+        try {
+          waveDurations = JSON.parse(formData.waveDurations);
+        } catch (error) {
+          this.logger.logError('parseWaveDurations', this.entityName, error);
+        }
+      }
+
+      let waveAxes: WaveAxis[] = [];
+      if (formData.waveAxes) {
+        try {
+          waveAxes = JSON.parse(formData.waveAxes);
+        } catch (error) {
+          this.logger.logError('parseWaveAxes', this.entityName, error);
+        }
+      }
+
+      let categories: EcgFinding[] = [];
+      if (formData.categoriesString) {
+        categories = formData.categoriesString
+          .split(',')
+          .map(cat => cat.trim())
+          .filter(cat => Object.values(EcgFinding).includes(cat as EcgFinding))
+          .map(cat => cat as EcgFinding);
+      }
+
+      const ecgParameters: EcgParameters = {
+        heartRate: formData.heartRate,
+        durations: waveDurations,
+        axes: waveAxes
       };
 
-      const hash = crypto.createHash('md5').update(file.buffer).digest('hex');
+      const examData: CreateExamDto = {
+        examDate: formData.examDate || new Date(),
+        dateOfBirth: formData.dateOfBirth,
+        report: formData.report,
+        categories,
+        version: formData.version || 1,
+        ecgParameters
+      };
 
       const uploadResult = await this.gridFsService.uploadFile(
-        `exam_${Date.now()}_${hash}_${file.originalname}`,
+        `exam_${Date.now()}_${md5Hash}_${file.originalname}`,
         file.buffer,
-        metadata
+        { contentType: file.mimetype }
       );
 
-      examData.imageUrl = `gridfs://${uploadResult._id}`;
+      examData.fileMetadata = {
+        originalName: file.originalname,
+        fileId: uploadResult._id as unknown as mongoose.Types.ObjectId,
+        contentType: file.mimetype,
+        size: file.size / (1024 * 1024), // Convert to MB
+        md5Hash,
+        uploadDate: new Date(),
+      } as FileMetadataDto;
 
       const createdExam = await this.repository.create(examData);
 

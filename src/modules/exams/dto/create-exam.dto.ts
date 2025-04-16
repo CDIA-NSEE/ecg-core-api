@@ -1,6 +1,9 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsString, IsNotEmpty, IsOptional, IsDate, IsEnum, IsNumber, IsUrl, IsArray } from 'class-validator';
+import { IsString, IsNotEmpty, IsOptional, IsDate, IsEnum, IsNumber, IsArray, ValidateNested, IsObject, Min } from 'class-validator';
 import { Type } from 'class-transformer';
+import { EcgFinding } from '../enums';
+import { FileMetadataDto } from '../../../shared/database/gridfs/dto';
+import { EcgParametersDto } from './ecg-parameters.dto';
 
 export class CreateExamDto {
   @ApiProperty({ description: 'The date when the exam was performed', example: '2025-04-14T15:00:00Z' })
@@ -15,22 +18,17 @@ export class CreateExamDto {
   @IsOptional()
   dateOfBirth?: Date;
 
-  @ApiProperty({ description: 'The URL of the exam image from GridFS', example: 'gridfs://exams/123456789', required: false })
-  @IsUrl()
+  @ApiProperty({ description: 'File metadata for the exam', required: false, type: FileMetadataDto })
+  @ValidateNested()
+  @Type(() => FileMetadataDto)
   @IsOptional()
-  imageUrl?: string;
+  fileMetadata?: FileMetadataDto;
 
-  @ApiProperty({ description: 'The amplitude of the ECG signal', example: 1.5, required: false })
-  @IsNumber()
+  @ApiProperty({ description: 'ECG-specific parameters', required: false, type: EcgParametersDto })
+  @ValidateNested()
+  @Type(() => EcgParametersDto)
   @IsOptional()
-  @Type(() => Number)
-  amplitude?: number;
-
-  @ApiProperty({ description: 'The velocity of the ECG signal', example: 25, required: false })
-  @IsNumber()
-  @IsOptional()
-  @Type(() => Number)
-  velocity?: number;
+  ecgParameters?: EcgParametersDto;
 
   @ApiProperty({ description: 'The medical report of the exam', example: 'Normal sinus rhythm', required: false })
   @IsString()
@@ -39,22 +37,19 @@ export class CreateExamDto {
 
   @ApiProperty({ 
     description: 'Categories or tags for the exam', 
-    example: ['cardiac', 'routine'], 
+    example: ['NORMAL_SINUS_RHYTHM', 'SINUS_TACHYCARDIA'], 
     required: false,
-    type: [String]
+    enum: EcgFinding,
+    isArray: true
   })
   @IsArray()
-  @IsString({ each: true })
+  @IsEnum(EcgFinding, { each: true })
   @IsOptional()
-  categories?: string[];
+  categories?: EcgFinding[];
 
-  @ApiProperty({ 
-    description: 'The status of the exam', 
-    example: 'pending', 
-    enum: ['pending', 'completed', 'canceled'],
-    default: 'pending'
-  })
-  @IsEnum(['pending', 'completed', 'canceled'])
+  @ApiProperty({ description: 'Version of the exam data', example: 1, default: 1 })
+  @IsNumber()
+  @Min(1)
   @IsOptional()
-  status?: string;
+  version?: number;
 }

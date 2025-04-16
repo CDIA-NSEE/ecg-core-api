@@ -7,8 +7,11 @@ import {
   IsNumber,
   IsArray,
   IsEnum,
+  Min,
 } from 'class-validator';
 import { MulterFile } from '../interfaces/multer-file.interface';
+import { EcgFinding } from '../enums';
+import { EcgWaveType } from '../enums';
 
 export class CreateExamWithFileDto {
   @ApiProperty({
@@ -39,25 +42,34 @@ export class CreateExamWithFileDto {
   @IsOptional()
   dateOfBirth?: Date;
 
+  // ECG Parameters - flattened for FormData
   @ApiProperty({
-    description: 'The amplitude of the ECG signal',
-    example: 1.5,
+    description: 'Heart rate in beats per minute',
+    example: 72,
     required: false,
   })
   @IsNumber()
   @Type(() => Number)
   @IsOptional()
-  amplitude?: number;
+  heartRate?: number;
 
   @ApiProperty({
-    description: 'The velocity of the ECG signal',
-    example: 25,
+    description: 'Wave durations as JSON string, e.g.',
+    example: '[{"wave":"P","duration":120},{"wave":"QRS","duration":80}]',
     required: false,
   })
-  @IsNumber()
-  @Type(() => Number)
+  @IsString()
   @IsOptional()
-  velocity?: number;
+  waveDurations?: string;
+
+  @ApiProperty({
+    description: 'Wave axes as JSON string, e.g.',
+    example: '[{"wave":"P","value":60},{"wave":"QRS","value":30}]',
+    required: false,
+  })
+  @IsString()
+  @IsOptional()
+  waveAxes?: string;
 
   @ApiProperty({
     description: 'The medical report of the exam',
@@ -69,23 +81,23 @@ export class CreateExamWithFileDto {
   report?: string;
 
   @ApiProperty({
-    description: 'Categories or tags for the exam',
-    example: ['routine', 'annual-checkup'],
+    description: 'Categories or tags for the exam as comma-separated values',
+    example: 'NORMAL_SINUS_RHYTHM,SINUS_BRADYCARDIA',
     required: false,
-    type: [String],
   })
-  @IsArray()
+  @IsString()
   @IsOptional()
-  categories?: string[];
+  categoriesString?: string;
 
   @ApiProperty({
-    description: 'The status of the exam',
-    example: 'pending',
-    enum: ['pending', 'completed', 'canceled'],
-    default: 'pending',
+    description: 'Version of the exam data',
+    example: 1,
+    default: 1,
     required: false,
   })
-  @IsEnum(['pending', 'completed', 'canceled'])
+  @IsNumber()
+  @Min(1)
+  @Type(() => Number)
   @IsOptional()
-  status?: 'pending' | 'completed' | 'canceled';
+  version?: number;
 }

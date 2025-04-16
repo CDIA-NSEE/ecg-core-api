@@ -1,0 +1,1 @@
+export { ExamSchema } from './exam.schema';
