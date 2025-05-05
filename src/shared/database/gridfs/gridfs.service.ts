@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { Readable } from 'stream';
+import { Readable } from 'node:stream';
 import { GridFsRepository } from './repositories/gridfs.repository';
 
 @Injectable()
