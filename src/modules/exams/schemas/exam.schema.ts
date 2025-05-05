@@ -13,6 +13,14 @@ export class Exam extends BaseDocument {
   @Prop({ required: true })
   examDate: Date;
 
+  @ApiProperty({ description: 'The patient age' })
+  @Prop()
+  age?: number;
+
+  @ApiProperty({ description: 'sex of the patient' })
+  @Prop()
+  sex?: 'M' | 'F';
+
   @ApiProperty({ description: 'The date of birth of the patient' })
   @Prop()
   dateOfBirth?: Date;

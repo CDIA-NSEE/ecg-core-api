@@ -13,6 +13,7 @@ import { FileMetadataDto } from '../../../shared/database/gridfs/dto';
 import { WaveDuration } from '../schemas/wave-duration.schema';
 import { WaveAxis } from '../schemas/wave-axis.schema';
 import { EcgParameters } from '../schemas/ecg-parameters.schema';
+import dayjs from 'dayjs';
 
 @Injectable()
 export class ExamCreatorService extends AbstractCreatorService<
@@ -78,6 +79,7 @@ export class ExamCreatorService extends AbstractCreatorService<
       const examData: CreateExamDto = {
         examDate: formData.examDate || new Date(),
         dateOfBirth: formData.dateOfBirth,
+        age: formData.age,
         report: formData.report,
         categories,
         version: formData.version || 1,

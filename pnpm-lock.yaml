@@ -53,6 +53,9 @@ dependencies:
   compression:
     specifier: ^1.7.4
     version: 1.8.0
+  dayjs:
+    specifier: ^1.11.13
+    version: 1.11.13
   helmet:
     specifier: ^7.1.0
     version: 7.2.0
@@ -2792,6 +2795,10 @@ packages:
       shebang-command: 2.0.0
       which: 2.0.2
     dev: true
+
+  /dayjs@1.11.13:
+    resolution: {integrity: sha512-oaMBel6gjolK862uaPQOVTA7q3TZhuSvuMQAAglQDOWYO9A91IrAOUJEyKVlqJlHE0vq5p5UXxzdPfMH/x6xNg==}
+    dev: false
 
   /debug@2.6.9:
     resolution: {integrity: sha512-bC7ElrdJaJnPbAP+1EotYvqZsb3ecl5wi6Bfi6BJTUcNowp6cvspg0jXznRTKDjm/E7AdgFBVeAPVMNcKGsHMA==}

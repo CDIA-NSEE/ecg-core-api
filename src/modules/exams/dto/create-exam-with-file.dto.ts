@@ -33,6 +33,24 @@ export class CreateExamWithFileDto {
   examDate?: Date;
 
   @ApiProperty({
+    description: 'The age of the patient',
+    example: 30,
+    required: false
+  })
+  @IsNumber()
+  @IsOptional()
+  age?: number;
+
+  @ApiProperty({
+    description: 'The sex of the patient',
+    example: 'M',
+    required: false
+  })
+  @IsString()
+  @IsOptional()
+  sex?: 'M' | 'F';
+
+  @ApiProperty({
     description: 'The date of birth of the patient',
     example: '1980-01-01T00:00:00.000Z',
     required: false,
