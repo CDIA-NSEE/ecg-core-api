@@ -12,7 +12,7 @@ export class EcgParametersDto {
 
   @ApiProperty({ 
     description: 'Wave durations for different ECG waves',
-    type: [WaveDuration]
+    type: () => [WaveDuration] // Use lazy loading with a function
   })
   @IsArray()
   @ValidateNested({ each: true })
@@ -22,7 +22,7 @@ export class EcgParametersDto {
 
   @ApiProperty({ 
     description: 'Wave axes for different ECG waves',
-    type: [WaveAxis]
+    type: () => [WaveAxis] // Use lazy loading with a function
   })
   @IsArray()
   @ValidateNested({ each: true })

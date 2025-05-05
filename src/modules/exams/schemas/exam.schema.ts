@@ -7,7 +7,11 @@ import { EcgFinding } from '../enums';
 
 export type ExamDocument = Exam & BaseDocument;
 
-@Schema({ timestamps: true })
+@Schema({ 
+  timestamps: true,
+  toJSON: { virtuals: true },
+  toObject: { virtuals: true }
+})
 export class Exam extends BaseDocument {
   @ApiProperty({ description: 'The date when the exam was performed' })
   @Prop({ required: true })
@@ -48,3 +52,13 @@ export class Exam extends BaseDocument {
 }
 
 export const ExamSchema = SchemaFactory.createForClass(Exam);
+
+// Create indexes for better query performance
+ExamSchema.index({ examDate: 1 });                   // Frequently queried field
+ExamSchema.index({ dateOfBirth: 1 });                // Used for filtering
+ExamSchema.index({ categories: 1 });                 // Used for filtering
+ExamSchema.index({ isDeleted: 1 });                  // Used in all queries
+ExamSchema.index({ 'ecgParameters.heartRate': 1 });  // For range queries
+ExamSchema.index({ createdAt: -1 });                 // For sorting by newest
+ExamSchema.index({ isDeleted: 1, examDate: -1 });    // Compound index for common query pattern
+ExamSchema.index({ isDeleted: 1, categories: 1 });   // Compound index for filtering by categories

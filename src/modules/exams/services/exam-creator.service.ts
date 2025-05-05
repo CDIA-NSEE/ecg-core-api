@@ -41,6 +41,7 @@ export class ExamCreatorService extends AbstractCreatorService<
         throw new BadRequestException('File buffer is required');
       }
 
+      // Calculate MD5 hash for file integrity verification
       const md5Hash = crypto.createHash('md5').update(file.buffer).digest('hex');
       
       let waveDurations: WaveDuration[] = [];
@@ -86,34 +87,67 @@ export class ExamCreatorService extends AbstractCreatorService<
         ecgParameters
       };
 
+      // Generate a unique filename with timestamp and hash to prevent collisions
+      const uniqueFilename = `exam_${Date.now()}_${md5Hash}_${file.originalname}`;
+      
+      // Upload the file to GridFS with exam-related metadata
       const uploadResult = await this.gridFsService.uploadFile(
-        `exam_${Date.now()}_${md5Hash}_${file.originalname}`,
+        uniqueFilename,
         file.buffer,
-        { contentType: file.mimetype }
+        { 
+          contentType: file.mimetype,
+          examDate: examData.examDate,
+          md5Hash: md5Hash,
+          fileType: this.getFileType(file.mimetype),
+          uploadTimestamp: new Date()
+        }
       );
 
+      // Store file metadata in the exam document
       examData.fileMetadata = {
         originalName: file.originalname,
-        fileId: uploadResult._id as unknown as mongoose.Types.ObjectId,
+        fileId: new mongoose.Types.ObjectId(uploadResult._id.toString()),
         contentType: file.mimetype,
         size: file.size / (1024 * 1024), // Convert to MB
         md5Hash,
         uploadDate: new Date(),
       } as FileMetadataDto;
 
+      // Create the exam document in MongoDB
       const createdExam = await this.repository.create(examData);
 
-      await this.gridFsService.findFile(uploadResult._id).then(async (file) => {
-        if (file) {
-          file.metadata.examId = createdExam._id;
-          await file.save();
+      // Update the file metadata with a reference to the exam ID
+      // This creates a bidirectional reference between exam and file
+      await this.gridFsService.updateFileMetadata(
+        uploadResult._id.toString(), 
+        { 
+          ...uploadResult.metadata,
+          examId: createdExam._id.toString()
         }
+      );
+
+      this.logger.logOperation('fileUploaded', this.entityName, { 
+        fileId: uploadResult._id.toString(),
+        examId: createdExam._id.toString(),
+        filename: uniqueFilename
       });
 
       return createdExam;
     } catch (error) {
       this.logger.logError('createWithFile', this.entityName, error);
       throw error;
+    }
+  }
+
+  private getFileType(mimeType: string): string {
+    if (mimeType.startsWith('image/')) {
+      return 'image';
+    } else if (mimeType === 'application/pdf') {
+      return 'pdf';
+    } else if (mimeType === 'application/dicom') {
+      return 'dicom';
+    } else {
+      return 'other';
     }
   }
 }

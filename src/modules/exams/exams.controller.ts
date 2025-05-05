@@ -14,7 +14,8 @@ import {
   ParseFilePipe,
   MaxFileSizeValidator,
   FileTypeValidator,
-  Req
+  Req,
+  UseGuards
 } from "@nestjs/common";
 import { ExamFacadeService } from "./services/exam.facade.service";
 import { CreateExamDto } from "./dto/create-exam.dto";
@@ -33,7 +34,9 @@ import {
   ApiNotFoundResponse,
   ApiInternalServerErrorResponse,
   ApiCreatedResponse,
-  ApiConsumes
+  ApiConsumes,
+  ApiBearerAuth,
+  ApiUnauthorizedResponse
 } from "@nestjs/swagger";
 import { ExamsPageResponseEntity } from "./entities/exams-page-response.entity";
 import { LoggerService } from "../../shared/common/services/logger.service";
@@ -42,8 +45,12 @@ import { FileInterceptor } from "@nestjs/platform-express";
 import { Request } from 'express';
 import { MulterFile } from "./interfaces/multer-file.interface";
 import { BadRequestException } from '@nestjs/common';
+import { JwtAuthGuard } from "../../modules/auth/guards/jwt-auth.guard";
+import { Public } from "../../modules/auth/decorators/public.decorator";
 
 @ApiTags('Exams')
+@ApiBearerAuth()
+@ApiUnauthorizedResponse({ description: 'Unauthorized' })
 @Controller("exams")
 export class ExamsController {
   constructor(
@@ -52,6 +59,7 @@ export class ExamsController {
   ) {}
 
   @Post()
+  @UseGuards(JwtAuthGuard)
   @ApiOperation({ summary: 'Create a new exam' })
   @ApiCreatedResponse({
     description: 'The exam has been successfully created',
@@ -77,6 +85,7 @@ export class ExamsController {
   }
 
   @Post('upload')
+  @UseGuards(JwtAuthGuard)
   @ApiConsumes('multipart/form-data')
   @ApiOperation({ summary: 'Upload a file and create an exam' })
   @ApiResponse({
@@ -131,6 +140,7 @@ export class ExamsController {
   }
 
   @Get()
+  @UseGuards(JwtAuthGuard)
   @ApiOperation({ summary: 'Find all exams with pagination and search' })
   @ApiResponse({
     status: HttpStatus.OK,
@@ -193,6 +203,7 @@ export class ExamsController {
   }
 
   @Get(":id")
+  @UseGuards(JwtAuthGuard)
   @ApiOperation({ summary: 'Find an exam by ID' })
   @ApiResponse({
     status: HttpStatus.OK,
@@ -220,6 +231,7 @@ export class ExamsController {
   }
 
   @Patch(":id")
+  @UseGuards(JwtAuthGuard)
   @ApiOperation({ summary: 'Update an exam by ID' })
   @ApiResponse({
     status: HttpStatus.OK,
@@ -254,6 +266,7 @@ export class ExamsController {
   }
 
   @Delete(":id")
+  @UseGuards(JwtAuthGuard)
   @ApiOperation({ summary: 'Delete an exam by ID' })
   @ApiResponse({
     status: HttpStatus.OK,

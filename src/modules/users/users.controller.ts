@@ -8,7 +8,8 @@ import {
 	Delete,
 	Query,
 	InternalServerErrorException,
-	HttpStatus
+	HttpStatus,
+	UseGuards
 } from "@nestjs/common";
 import { UserFacadeService } from "./services/user.facade.service";
 import { CreateUserDto } from "./dto/create-user.dto";
@@ -25,13 +26,19 @@ import {
 	ApiBadRequestResponse,
 	ApiNotFoundResponse,
 	ApiInternalServerErrorResponse,
-	ApiCreatedResponse
+	ApiCreatedResponse,
+	ApiBearerAuth,
+	ApiUnauthorizedResponse
 } from "@nestjs/swagger";
 import { UsersPageResponseEntity } from "./entities/users-page-response.entity";
 import { LoggerService } from "../../shared/common/services/logger.service";
 import { UserResponseEntity } from "./entities/user-response.entity";
+import { JwtAuthGuard } from "../../modules/auth/guards/jwt-auth.guard";
+import { Public } from "../../modules/auth/decorators/public.decorator";
 
 @ApiTags('Users')
+@ApiBearerAuth()
+@ApiUnauthorizedResponse({ description: 'Unauthorized' })
 @Controller("users")
 export class UsersController {
 	constructor(
@@ -40,6 +47,7 @@ export class UsersController {
 	) {}
 
 	@Post()
+	@UseGuards(JwtAuthGuard)
 	@ApiOperation({ summary: 'Create a new user' })
 	@ApiCreatedResponse({
 		description: 'The user has been successfully created',
@@ -65,6 +73,7 @@ export class UsersController {
 	}
 
 	@Get()
+	@UseGuards(JwtAuthGuard)
 	@ApiOperation({ summary: 'Find all users with pagination and search' })
 	@ApiResponse({
 		status: HttpStatus.OK,
@@ -106,6 +115,7 @@ export class UsersController {
 	}
 
 	@Patch(":id")
+	@UseGuards(JwtAuthGuard)
 	@ApiOperation({ summary: 'Update a user by ID' })
 	@ApiResponse({
 		status: HttpStatus.OK,
@@ -140,6 +150,7 @@ export class UsersController {
 	}
 
 	@Delete(":id")
+	@UseGuards(JwtAuthGuard)
 	@ApiOperation({ summary: 'Delete a user by ID' })
 	@ApiResponse({
 		status: HttpStatus.OK,

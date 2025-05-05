@@ -11,9 +11,11 @@ import { ExamDeleterService } from './services/exam-deleter.service';
 import { ExamIndexerService } from './services/exam-indexer.service';
 import { LoggerService } from '../../shared/common/services/logger.service';
 import { GridFsService } from '../../shared/database/gridfs/gridfs.service';
-import { GridFsRepository } from '../../shared/database/gridfs/repositories/gridfs.repository';
+import { NativeGridFsRepository } from '../../shared/database/gridfs/repositories';
 import { MulterModule } from '@nestjs/platform-express';
 import { memoryStorage } from 'multer';
+import { GridFsModule } from '../../shared';
+import { CacheModule } from '@nestjs/cache-manager';
 
 @Module({
   imports: [
@@ -21,33 +23,22 @@ import { memoryStorage } from 'multer';
     MulterModule.register({
       storage: memoryStorage(), // Use memory storage for processing files
     }),
+    GridFsModule,
+    // Import CacheModule with specific TTL for this module
+    CacheModule.register({
+      ttl: 300, // 5 minutes TTL for exam-specific caches
+      max: 500, // Maximum number of items in cache
+    }),
   ],
   providers: [
     ExamFacadeService,
     ExamRepository,
-    {
-      provide: 'ExamCreatorService',
-      useClass: ExamCreatorService,
-    },
-    {
-      provide: 'ExamFinderService',
-      useClass: ExamFinderService,
-    },
-    {
-      provide: 'ExamUpdaterService',
-      useClass: ExamUpdaterService,
-    },
-    {
-      provide: 'ExamDeleterService',
-      useClass: ExamDeleterService,
-    },
-    {
-      provide: 'ExamIndexerService',
-      useClass: ExamIndexerService,
-    },
+    ExamCreatorService,
+    ExamFinderService,
+    ExamUpdaterService,
+    ExamDeleterService,
+    ExamIndexerService,
     LoggerService,
-    GridFsService,
-    GridFsRepository,
   ],
   controllers: [ExamsController],
   exports: [ExamFacadeService, ExamRepository, LoggerService],

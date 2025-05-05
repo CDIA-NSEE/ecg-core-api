@@ -1,1 +1,1 @@
-export * from './gridfs.repository';
+export * from './native-gridfs.repository';

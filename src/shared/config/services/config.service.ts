@@ -10,13 +10,13 @@ export class ConfigService {
 
   constructor(configService: NestConfigService) {
     this.config = configService.get<ConfigType<typeof configuration>>(
-      configuration.KEY,
+      'app',
       { infer: true },
     );
   }
 
   get<T>(key: string, defaultValue?: T): Maybe<T> {
-    return Maybe.of(this.config[key] ?? defaultValue);
+    return Maybe.of(this.config?.[key] ?? defaultValue);
   }
 
   getOrThrow<T>(key: string): T {
@@ -31,6 +31,7 @@ export class ConfigService {
     return this.get<T>(key).getOrElse(defaultValue);
   }
 
+  // Convenience getters for common configuration values
   get mongoUri(): string {
     return this.getOrThrow<string>('MONGODB_URI');
   }
@@ -43,15 +44,23 @@ export class ConfigService {
     return this.getOrDefault<string>('NODE_ENV', 'development');
   }
 
+  get redisUrl(): string | undefined {
+    return this.get<string>('REDIS_URL').getOrElse(undefined);
+  }
+
+  get redisTtl(): number {
+    return this.getOrDefault<number>('REDIS_TTL', 3600);
+  }
+
+  get isDevelopment(): boolean {
+    return this.nodeEnv === 'development';
+  }
+
   get isProduction(): boolean {
     return this.nodeEnv === 'production';
   }
 
-  get redisUrl(): string {
-    return this.getOrThrow<string>('REDIS_URL');
-  }
-
-  get redisTtl(): number {
-    return this.getOrDefault<number>('REDIS_TTL', 3600); // Default 1 hour
+  get isTest(): boolean {
+    return this.nodeEnv === 'test';
   }
 }
