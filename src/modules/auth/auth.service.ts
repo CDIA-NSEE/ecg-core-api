@@ -11,11 +11,10 @@ export class AuthService {
     private userRepository: UserRepository,
   ) {}
 
-  async validateUser(username: string, pass: string): Promise<Partial<UserDocument> | null> {
+  async validateUser(email: string, pass: string): Promise<Partial<UserDocument> | null> {
     try {
-      // Find user by email (used as username)
-      const users = await this.userRepository.findAll({ email: username });
-      const user = users.length > 0 ? users[0] : null;
+      // Find user by email
+      const user = await this.userRepository.findByEmail(email);
       
       if (!user) {
         return null;
@@ -26,7 +25,7 @@ export class AuthService {
       
       if (isPasswordValid) {
         // Remove password from returned user object
-        const { password, ...result } = user;
+        const { password, ...result } = user.toObject();
         return result;
       }
       
@@ -40,7 +39,7 @@ export class AuthService {
   async login(user: any) {
     // Create payload for JWT
     const payload = { 
-      username: user.email || user.username, 
+      email: user.email, 
       sub: user._id.toString(),
       name: user.name
     };

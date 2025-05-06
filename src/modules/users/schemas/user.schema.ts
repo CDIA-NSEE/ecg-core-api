@@ -11,7 +11,7 @@ export class User extends BaseDocument {
   name: string;
 
   @ApiProperty({ description: 'The email of the user' })
-  @Prop({ required: true })
+  @Prop({ required: true, unique: true })
   email: string;
 
   @ApiProperty({ description: 'The password of the user' })

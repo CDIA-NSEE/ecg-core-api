@@ -12,9 +12,6 @@ export class UserResponseEntity extends BaseEntity {
   @ApiProperty({ description: 'The email of the user' })
   email: string;
 
-  @ApiProperty({ description: 'The password of the user' })
-  password?: string;
-
   @ApiProperty({ description: 'The CRM of the user' })
   crm: string;
 
@@ -39,7 +36,6 @@ export class UserResponseEntity extends BaseEntity {
       id: user._id.toString(),
       name: user.name,
       email: user.email,
-      password: user.password,
       crm: user.crm,
       deletedAt: user.deletedAt,
       createdAt: user.createdAt,

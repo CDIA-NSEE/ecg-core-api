@@ -9,7 +9,8 @@ import {
 	Query,
 	InternalServerErrorException,
 	HttpStatus,
-	UseGuards
+	UseGuards,
+	NotFoundException
 } from "@nestjs/common";
 import { UserFacadeService } from "./services/user.facade.service";
 import { CreateUserDto } from "./dto/create-user.dto";
@@ -34,7 +35,6 @@ import { UsersPageResponseEntity } from "./entities/users-page-response.entity";
 import { LoggerService } from "../../shared/common/services/logger.service";
 import { UserResponseEntity } from "./entities/user-response.entity";
 import { JwtAuthGuard } from "../../modules/auth/guards/jwt-auth.guard";
-import { Public } from "../../modules/auth/decorators/public.decorator";
 
 @ApiTags('Users')
 @ApiBearerAuth()
@@ -114,6 +114,41 @@ export class UsersController {
 		}
 	}
 
+	@Get(':id')
+	@UseGuards(JwtAuthGuard)
+	@ApiOperation({ summary: 'Find a user by ID' })
+	@ApiParam({
+		name: 'id',
+		required: true,
+		description: 'The ID of the user to find',
+		type: String,
+	})
+	@ApiResponse({
+		status: 200,
+		description: 'User found successfully',
+		type: UserResponseEntity,
+	})
+	@ApiNotFoundResponse({ 
+		description: 'User not found' 
+	})
+	@ApiInternalServerErrorResponse({ 
+		description: 'Internal server error' 
+	})
+	async findOne(@Param() { id }: FindOneDto): Promise<UserResponseEntity> {
+		try {
+			return await this.facade.findOne(id);
+		} catch (error) {
+			this.logger.error(`Error finding user ${id}: ${error.message}`, error.stack);
+			
+			// Preserve the NotFoundException to return a 404 status code
+			if (error instanceof NotFoundException) {
+				throw error;
+			}
+			
+			throw new InternalServerErrorException('Failed to find user');
+		}
+	}
+
 	@Patch(":id")
 	@UseGuards(JwtAuthGuard)
 	@ApiOperation({ summary: 'Update a user by ID' })
@@ -145,6 +180,12 @@ export class UsersController {
 			return await this.facade.update(id, user);
 		} catch (error) {
 			this.logger.error(`Error updating user ${id}: ${error.message}`, error.stack);
+			
+			// Preserve the NotFoundException to return a 404 status code
+			if (error instanceof NotFoundException) {
+				throw error;
+			}
+			
 			throw new InternalServerErrorException('Failed to update user');
 		}
 	}
@@ -173,6 +214,12 @@ export class UsersController {
 			return await this.facade.delete(id);
 		} catch (error) {
 			this.logger.error(`Error deleting user ${id}: ${error.message}`, error.stack);
+			
+			// Preserve the NotFoundException to return a 404 status code
+			if (error instanceof NotFoundException) {
+				throw error;
+			}
+			
 			throw new InternalServerErrorException('Failed to delete user');
 		}
 	}

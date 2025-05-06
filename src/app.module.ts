@@ -10,6 +10,8 @@ import { AppThrottlerModule } from './shared/throttler/throttler.module';
 import { CacheModule, CacheInterceptor } from '@nestjs/cache-manager';
 import { UsersModule } from './modules';
 import { ExamsModule } from './modules/exams';
+import { AuthModule } from './modules/auth/auth.module';
+import { LogsModule } from './modules/logs/logs.module';
 
 @Module({
   imports: [
@@ -59,6 +61,8 @@ import { ExamsModule } from './modules/exams';
     UsersModule,
     ExamsModule,
     GridFsModule,
+    AuthModule,
+    LogsModule,
   ],
   controllers: [AppController],
   providers: [

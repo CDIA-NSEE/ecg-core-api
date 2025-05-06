@@ -44,22 +44,36 @@ export abstract class AbstractRepository<T extends BaseDocument> {
 
   async findOne(id: string, projection?: Record<string, any>): Promise<T> {
     try {
-      const document = await this.model.findById(id)
+      // findById doesn't accept an object with conditions, we need to use findOne instead
+      const document = await this.model.findOne({ _id: id, deletedAt: null })
         .select(projection || {})
         .lean()
         .exec();
+      
       if (!document) {
-        throw new NotFoundException('Document not found');
+        throw new NotFoundException(`Document not found with id: ${id}`);
       }
+      
       return document as T;
     } catch (error) {
+      // If it's already a NotFoundException, just rethrow it
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
+      
+      // For MongoDB invalid ID errors, throw a NotFoundException instead of a 500
+      if (error.name === 'CastError' && error.kind === 'ObjectId') {
+        throw new NotFoundException(`Invalid ID format or document not found: ${id}`);
+      }
+      
+      // For other errors, throw the repository exception
       throw new RepositoryException('Failed to find document', error);
     }
   }
 
   async findAll(filter: FilterQuery<T> = {}, projection?: Record<string, any>): Promise<T[]> {
     try {
-      return await this.model.find({ ...filter, isDeleted: false })
+      return await this.model.find({ ...filter, deletedAt: null })
         .select(projection || {})
         .lean()
         .exec() as T[];
@@ -71,7 +85,7 @@ export abstract class AbstractRepository<T extends BaseDocument> {
   async update(id: string, updateDto: UpdateQuery<T>): Promise<T> {
     try {
       const updated = await this.model
-        .findOneAndUpdate({ _id: id, isDeleted: false }, updateDto, {
+        .findOneAndUpdate({ _id: id, deletedAt: null }, updateDto, {
           new: true,
         })
         .lean()
@@ -93,7 +107,7 @@ export abstract class AbstractRepository<T extends BaseDocument> {
       const deleted = await this.model
         .findByIdAndUpdate(
           id,
-          { isDeleted: true, deletedAt: new Date() } as UpdateQuery<T>,
+          { deletedAt: new Date() } as UpdateQuery<T>,
           { new: true },
         )
         .lean()
@@ -131,14 +145,14 @@ export abstract class AbstractRepository<T extends BaseDocument> {
 
       const [data, total] = await Promise.all([
         this.model
-          .find({ ...filter, isDeleted: false })
+          .find({ ...filter, deletedAt: null })
           .select(projection || {})
           .sort(sort)
           .skip(skip)
           .limit(limit)
           .lean()
           .exec(),
-        this.model.countDocuments({ ...filter, isDeleted: false }).exec(),
+        this.model.countDocuments({ ...filter, deletedAt: null }).exec(),
       ]);
 
       const lastPage = Math.ceil(total / limit);
@@ -168,7 +182,7 @@ export abstract class AbstractRepository<T extends BaseDocument> {
     sortField: string = '_id'
   ): Promise<{ data: T[]; nextCursor: string | null }> {
     try {
-      const query: FilterQuery<T> = { ...filter, isDeleted: false };
+      const query: FilterQuery<T> = { ...filter, deletedAt: null };
       
       // If cursor ID is provided, find documents after that ID
       if (cursorId) {
@@ -219,7 +233,7 @@ export abstract class AbstractRepository<T extends BaseDocument> {
 
       const bulkOps = criteria.map((criterion, index) => ({
         updateOne: {
-          filter: { ...criterion, isDeleted: false },
+          filter: { ...criterion, deletedAt: null },
           update: updates[index],
         },
       }));

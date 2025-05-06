@@ -17,9 +17,6 @@ export abstract class AbstractDeleterService<T extends BaseDocument> {
     try {
       this.logger.logOperation('delete', this.entityName, { id });
       const entity = await this.repository.findOne(id);
-      if (!entity) {
-        throw new NotFoundException(`${this.entityName} not found`);
-      }
       await this.repository.delete(id);
       return entity;
     } catch (error) {

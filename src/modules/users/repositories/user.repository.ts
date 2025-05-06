@@ -11,4 +11,8 @@ export class UserRepository extends AbstractRepository<UserDocument> {
   ) {
     super(userModel);
   }
+
+  public async findByEmail(email: string): Promise<UserDocument | null> {
+    return this.userModel.findOne({ email }).exec();
+  }
 }

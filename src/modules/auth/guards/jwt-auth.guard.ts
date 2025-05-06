@@ -16,8 +16,8 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
       context.getClass(),
     ]);
 
-    // Skip authentication for public routes or in development mode
-    if (isPublic || process.env.NODE_ENV === 'development') {
+    // Skip authentication only for routes explicitly marked as public
+    if (isPublic) {
       return true;
     }
 
